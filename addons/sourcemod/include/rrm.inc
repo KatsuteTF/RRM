@@ -24,7 +24,7 @@ public __pl_rrm_SetNTVOptional()
 }
 #endif
 
-functag RRMTag public(bool:enable, Float:value);
+typedef RRMTag = function void (bool enable, float value);
 
 /**
  * Registers the modifier into the core

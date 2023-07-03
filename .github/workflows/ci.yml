@@ -1,0 +1,39 @@
+name: SourcePawn CI
+on: [push]
+
+jobs:
+  ci:
+    name: SourcePawn CI
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Install SourceMod
+        uses: KatsuteTF/spcomp
+
+      - name: Install TF2Attributes
+        run: curl -L -k -o addons/sourcemod/include/tf2attributes.inc https://raw.githubusercontent.com/FlaminSarge/tf2attributes/master/scripting/include/tf2attributes.inc
+
+      - name: Install TF2Attributes
+        run: curl -L -k -o addons/sourcemod/include/morecolors.inc https://raw.githubusercontent.com/DoctorMcKay/sourcemod-plugins/master/scripting/include/morecolors.inc
+
+      - name: Compile Plugin
+        run: |
+          spcomp addons/sourcemod/scripting/rrm.sp
+          spcomp -i addons/sourcemod/include addons/sourcemod/scripting/rrm_backstabdamage.sp
+          spcomp -i addons/sourcemod/include addons/sourcemod/scripting/rrm_crits.sp
+          spcomp -i addons/sourcemod/include addons/sourcemod/scripting/rrm_damage.sp
+          spcomp -i addons/sourcemod/include addons/sourcemod/scripting/rrm_example.sp
+          spcomp -i addons/sourcemod/include addons/sourcemod/scripting/rrm_exphs.sp
+          spcomp -i addons/sourcemod/include addons/sourcemod/scripting/rrm_gravity.sp
+          spcomp -i addons/sourcemod/include addons/sourcemod/scripting/rrm_healonhit.sp
+          spcomp -i addons/sourcemod/include addons/sourcemod/scripting/rrm_hsdamage.sp
+          spcomp -i addons/sourcemod/include addons/sourcemod/scripting/rrm_jump.sp
+          spcomp -i addons/sourcemod/include addons/sourcemod/scripting/rrm_meleedamage.sp
+          spcomp -i addons/sourcemod/include addons/sourcemod/scripting/rrm_meleeonly.sp
+          spcomp -i addons/sourcemod/include addons/sourcemod/scripting/rrm_primarydamage.sp
+          spcomp -i addons/sourcemod/include addons/sourcemod/scripting/rrm_scarybullets.sp
+          spcomp -i addons/sourcemod/include addons/sourcemod/scripting/rrm_secondarydamage.sp
+          spcomp -i addons/sourcemod/include addons/sourcemod/scripting/rrm_sentrydamage.sp
+          spcomp -i addons/sourcemod/include addons/sourcemod/scripting/rrm_speed.sp

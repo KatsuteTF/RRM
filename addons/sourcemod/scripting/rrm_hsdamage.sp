@@ -1,14 +1,14 @@
-/*	
+/*
  *	============================================================================
- *	
+ *
  *	[RRM] Headshot Damage Modifier
  *
  *	Written by Tak (Chaosxk)
  *	https://forums.alliedmods.net/member.php?u=87026
  *
- *	This plugin is FREE and can be distributed to anyone.  
+ *	This plugin is FREE and can be distributed to anyone.
  *	If you have paid for this plugin, get your money back.
- *	
+ *
  *	Modifier that changes headshot damage.
  *
  *	============================================================================
@@ -31,7 +31,7 @@ float gDamage = 0.0;
 ConVar cMin = null, cMax = null;
 float gMin = 0.0, gMax = 0.0;
 
-public Plugin myinfo = 
+public Plugin myinfo =
 {
 	name = "[RRM] Headshot Damage",
 	author = RRM_AUTHOR,
@@ -44,23 +44,23 @@ public void OnPluginStart()
 {
 	cMin = CreateConVar("rrm_hsdamage_min", "0.1", "Minimum value for the random number generator.");
 	cMax = CreateConVar("rrm_hsdamage_max", "2.0", "Maximum value for the random number generator.");
-	
+
 	cMin.AddChangeHook(OnConvarChanged);
 	cMax.AddChangeHook(OnConvarChanged);
-	
+
 	gMin = cMin.FloatValue;
 	gMax = cMax.FloatValue;
-	
+
 	for (int i = 1; i < MaxClients; i++)
 	{
 		if(!IsClientInGame(i))
 			continue;
-		SDKHook(i, SDKHook_OnTakeDamage, OnTakeDamage);
+		SDKHook(i, SDKHook_OnTakeDamageAlive, OnTakeDamage);
 	}
-	
+
 	if(RRM_IsRegOpen())
 		RegisterModifiers();
-		
+
 	AutoExecConfig(true, "rrm_hsdamage", "rrm");
 }
 
@@ -78,9 +78,9 @@ public void OnConvarChanged(Handle convar, char[] oldValue, char[] newValue)
 {
 	if (StrEqual(oldValue, newValue, true))
 		return;
-		
+
 	float fNewValue = StringToFloat(newValue);
-	
+
 	if(convar == cMin)
 		gMin = fNewValue;
 	else if(convar == cMax)
@@ -89,7 +89,7 @@ public void OnConvarChanged(Handle convar, char[] oldValue, char[] newValue)
 
 public void OnClientPostAdminCheck(int client)
 {
-	SDKHook(client, SDKHook_OnTakeDamage, OnTakeDamage); 
+	SDKHook(client, SDKHook_OnTakeDamageAlive, OnTakeDamage);
 }
 
 public int RRM_Callback_HeadshotDamage(bool enable, float value)
@@ -100,12 +100,12 @@ public int RRM_Callback_HeadshotDamage(bool enable, float value)
 	return gEnabled;
 }
 
-public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &damage, int &damagetype, int &weapon, 
+public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &damage, int &damagetype, int &weapon,
 	float damageForce[3], float damagePosition[3], int damagecustom)
 {
 	if(!gEnabled)
 		return Plugin_Continue;
-		
+
 	if(damagecustom == TF_CUSTOM_HEADSHOT)
 	{
 		damage *= gDamage;

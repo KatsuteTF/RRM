@@ -1,14 +1,14 @@
-/*	
+/*
  *	============================================================================
- *	
+ *
  *	[RRM] Explosive Headshots Modifier
  *
  *	Written by Tak (Chaosxk)
  *	https://forums.alliedmods.net/member.php?u=87026
  *
- *	This plugin is FREE and can be distributed to anyone.  
+ *	This plugin is FREE and can be distributed to anyone.
  *	If you have paid for this plugin, get your money back.
- *	
+ *
  *	Modifier that sets off an explosion on a headshot.
  *
  *	============================================================================
@@ -30,7 +30,7 @@ int gEnabled = 0;
 ConVar cDamage = null, cRadius = null;
 int gDamage = 0, gRadius = 0;
 
-public Plugin myinfo = 
+public Plugin myinfo =
 {
 	name = "[RRM] Explosive Headshots Modifier",
 	author = RRM_AUTHOR,
@@ -43,23 +43,23 @@ public void OnPluginStart()
 {
 	cDamage = CreateConVar("rrm_exphs_damage", "30", "Damage the explosion will do.");
 	cRadius = CreateConVar("rrm_exphs_radius", "50", "Radius of the explosion damage.");
-	
+
 	cDamage.AddChangeHook(OnConvarChanged);
 	cRadius.AddChangeHook(OnConvarChanged);
-	
+
 	gDamage = cDamage.IntValue;
 	gRadius = cRadius.IntValue;
-	
+
 	for (int i = 1; i < MaxClients; i++)
 	{
 		if(!IsClientInGame(i))
 			continue;
-		SDKHook(i, SDKHook_OnTakeDamage, OnTakeDamage);
+		SDKHook(i, SDKHook_OnTakeDamageAlive, OnTakeDamage);
 	}
-	
+
 	if(RRM_IsRegOpen())
 		RegisterModifiers();
-		
+
 	AutoExecConfig(true, "rrm_exphs", "rrm");
 }
 
@@ -77,9 +77,9 @@ public void OnConvarChanged(Handle convar, char[] oldValue, char[] newValue)
 {
 	if (StrEqual(oldValue, newValue, true))
 		return;
-		
+
 	float fNewValue = StringToFloat(newValue);
-	
+
 	if(convar == cDamage)
 		gDamage = RoundFloat(fNewValue);
 	else if(convar == cRadius)
@@ -88,7 +88,7 @@ public void OnConvarChanged(Handle convar, char[] oldValue, char[] newValue)
 
 public void OnClientPostAdminCheck(int client)
 {
-	SDKHook(client, SDKHook_OnTakeDamage, OnTakeDamage); 
+	SDKHook(client, SDKHook_OnTakeDamageAlive, OnTakeDamage);
 }
 
 public int RRM_Callback_Explode(bool enable, float value)
@@ -97,12 +97,12 @@ public int RRM_Callback_Explode(bool enable, float value)
 	return gEnabled;
 }
 
-public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &damage, int &damagetype, int &weapon, 
+public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &damage, int &damagetype, int &weapon,
 	float damageForce[3], float damagePosition[3], int damagecustom)
 {
 	if(!gEnabled)
 		return Plugin_Continue;
-		
+
 	if(damagecustom == TF_CUSTOM_HEADSHOT)
 	{
 		float pos[3];

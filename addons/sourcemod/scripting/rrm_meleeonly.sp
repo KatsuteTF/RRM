@@ -1,14 +1,14 @@
-/*	
+/*
  *	============================================================================
- *	
+ *
  *	[RRM] Melee Only Modifier
  *
  *	Written by Tak (Chaosxk)
  *	https://forums.alliedmods.net/member.php?u=87026
  *
- *	This plugin is FREE and can be distributed to anyone.  
+ *	This plugin is FREE and can be distributed to anyone.
  *	If you have paid for this plugin, get your money back.
- *	
+ *
  *	Modifier that force everyone to melee.
  *
  *	============================================================================
@@ -28,7 +28,7 @@
 
 int gEnabled = 0;
 
-public Plugin myinfo = 
+public Plugin myinfo =
 {
 	name = "[RRM] Melee Only Modifier",
 	author = RRM_AUTHOR,
@@ -40,10 +40,10 @@ public Plugin myinfo =
 public void OnPluginStart()
 {
 	HookEvent("player_spawn", OnPlayerSpawn, EventHookMode_Post);
-	
+
 	if(RRM_IsRegOpen())
 		RegisterModifiers();
-		
+
 	AutoExecConfig(true, "rrm_meleeonly", "rrm");
 }
 
@@ -87,7 +87,7 @@ void EnableMeleeOnly()
 	{
 		if(!IsClientInGame(i))
 			continue;
-			
+
 		StripPlayer(i);
 	}
 }
@@ -98,7 +98,7 @@ void DisableMeleeOnly()
 	{
 		if(!IsClientInGame(i))
 			continue;
-			
+
 		UnstripPlayer(i);
 	}
 }
@@ -109,7 +109,7 @@ void StripPlayer(int i)
 	TF2Attrib_SetByDefIndex(i, 77, 0.0);
 	TF2Attrib_SetByDefIndex(i, 79, 0.0);
 	TF2Attrib_SetByDefIndex(i, 81, 0.0);
-	
+
 	for (int j = 0; j < 2; j++)
 	{
 		int weapon = GetPlayerWeaponSlot(i, j);
@@ -117,7 +117,7 @@ void StripPlayer(int i)
 			continue;
 		TF2Attrib_SetByDefIndex(weapon, 3, 0.0);
 	}
-	
+
 	TF2_RegeneratePlayer(i);
 	int weapon = GetPlayerWeaponSlot(i, 2);
 	if(!IsValidEntity(weapon))
@@ -130,7 +130,7 @@ void UnstripPlayer(int i)
 	TF2Attrib_RemoveByDefIndex(i, 77);
 	TF2Attrib_RemoveByDefIndex(i, 79);
 	TF2Attrib_RemoveByDefIndex(i, 81);
-	
+
 	for (int j = 0; j < 2; j++)
 	{
 		int weapon = GetPlayerWeaponSlot(i, j);
@@ -138,7 +138,7 @@ void UnstripPlayer(int i)
 			continue;
 		TF2Attrib_RemoveByDefIndex(weapon, 3);
 	}
-	
+
 	TF2_RegeneratePlayer(i);
 	EquipPlayerWeapon(i, GetPlayerWeaponSlot(i, 0));
 }

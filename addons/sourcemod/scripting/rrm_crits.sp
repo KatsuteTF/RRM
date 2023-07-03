@@ -1,14 +1,14 @@
-/*	
+/*
  *	============================================================================
- *	
+ *
  *	[RRM] Critical Modifier
  *
  *	Written by Tak (Chaosxk)
  *	https://forums.alliedmods.net/member.php?u=87026
  *
- *	This plugin is FREE and can be distributed to anyone.  
+ *	This plugin is FREE and can be distributed to anyone.
  *	If you have paid for this plugin, get your money back.
- *	
+ *
  *	Modifier that changes critical chance.
  *
  *	============================================================================
@@ -31,7 +31,7 @@ float gChance = 0.0;
 ConVar cMin = null, cMax = null;
 float gMin = 0.0, gMax = 0.0;
 
-public Plugin myinfo = 
+public Plugin myinfo =
 {
 	name = "[RRM] Critical Modifier",
 	author = RRM_AUTHOR,
@@ -44,16 +44,16 @@ public void OnPluginStart()
 {
 	cMin = CreateConVar("rrm_crits_min", "0.5", "Minimum value for the random number generator.");
 	cMax = CreateConVar("rrm_crits_max", "1.0", "Maximum value for the random number generator.");
-	
+
 	cMin.AddChangeHook(OnConvarChanged);
 	cMax.AddChangeHook(OnConvarChanged);
-	
+
 	gMin = cMin.FloatValue;
 	gMax = cMax.FloatValue;
-	
+
 	if(RRM_IsRegOpen())
 		RegisterModifiers();
-		
+
 	AutoExecConfig(true, "rrm_crits", "rrm");
 }
 
@@ -71,9 +71,9 @@ public void OnConvarChanged(Handle convar, char[] oldValue, char[] newValue)
 {
 	if (StrEqual(oldValue, newValue, true))
 		return;
-		
+
 	float fNewValue = StringToFloat(newValue);
-	
+
 	if(convar == cMin)
 		gMin = fNewValue;
 	else if(convar == cMax)

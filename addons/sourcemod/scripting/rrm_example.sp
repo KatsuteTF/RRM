@@ -1,14 +1,14 @@
-/*	
+/*
  *	============================================================================
- *	
+ *
  *	[RRM] Critical Modifier Example
  *
  *	Written by Tak (Chaosxk)
  *	https://forums.alliedmods.net/member.php?u=87026
  *
- *	This plugin is FREE and can be distributed to anyone.  
+ *	This plugin is FREE and can be distributed to anyone.
  *	If you have paid for this plugin, get your money back.
- *	
+ *
  *	Simple example plugin that will enable/disable and modifies critical chance.
  *
  *	============================================================================
@@ -31,7 +31,7 @@ float gChance = 0.0;
 ConVar cMin = null, cMax = null;
 float gMin = 0.0, gMax = 0.0;
 
-public Plugin myinfo = 
+public Plugin myinfo =
 {
 	//RRM_AUTHOR and RRM_URL is defined in .inc
 	//RRM_VERSION is defined in this plugin
@@ -47,22 +47,22 @@ public void OnPluginStart()
 	//These are our convars
 	cMin = CreateConVar("rrm_crits_min", "0.5", "Minimum value for the random number generator.");
 	cMax = CreateConVar("rrm_crits_max", "1.0", "Maximum value for the random number generator.");
-	
+
 	//We hook them if user decides to change them and forward them to OnConvarChanged
 	cMin.AddChangeHook(OnConvarChanged);
 	cMax.AddChangeHook(OnConvarChanged);
-	
+
 	//We cache the variables to gMin and gMax
 	gMin = cMin.FloatValue;
 	gMax = cMax.FloatValue;
-	
+
 	//RRM_IsRegOpen will return true if we can register modifiers
 	//The purpose of this is to ensure we do not encounter problems on late-load
 	//This must always be executed
 	//If registering is open, then we run RegisterModifiers() which will run our function we defined below
 	if(RRM_IsRegOpen())
 		RegisterModifiers();
-	
+
 	//We create a config with out convars called rrm_crits.cfg to cfg/rrm folder
 	AutoExecConfig(true, "rrm_crits", "rrm");
 }
@@ -91,9 +91,9 @@ public void OnConvarChanged(Handle convar, char[] oldValue, char[] newValue)
 {
 	if (StrEqual(oldValue, newValue, true))
 		return;
-		
+
 	float fNewValue = StringToFloat(newValue);
-	
+
 	if(convar == cMin)
 		gMin = fNewValue;
 	else if(convar == cMax)

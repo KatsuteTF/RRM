@@ -1,14 +1,14 @@
-/*	
+/*
  *	============================================================================
- *	
+ *
  *	[TF2] Random Round Modifier
  *
  *	Written by Tak (Chaosxk)
  *	https://forums.alliedmods.net/member.php?u=87026
  *
- *	This plugin is FREE and can be distributed to anyone.  
+ *	This plugin is FREE and can be distributed to anyone.
  *	If you have paid for this plugin, get your money back.
- *	
+ *
  *	This is the core plugin that manages modifiers (sub-plugins)
  *
  *	============================================================================
@@ -46,7 +46,7 @@ DataPack gCurrentModifier = null;
 int gIsRegOpen = 0;
 //bool gIsMinHUDEnabled[MAXPLAYERS + 1] =  { false, ... };
 
-public Plugin myinfo = 
+public Plugin myinfo =
 {
 	name = "[TF2] Random Round Modifier",
 	author = RRM_AUTHOR,
@@ -58,24 +58,24 @@ public Plugin myinfo =
 public void OnPluginStart()
 {
 	CreateConVar("sm_rrm_version", RRM_VERSION, "Random Round Modifier Version", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_DONTRECORD|FCVAR_NOTIFY);
-	
+
 	RegAdminCmd("sm_rrmroll", Function_RollModifier, ADMFLAG_GENERIC, "Rerolls a different modifier.");
-	
+
 	HookEvent("teamplay_round_start", OnRoundStart, EventHookMode_Post);
-	
+
 	/*for (int i = 1; i < MaxClients; i++)
 	{
 		if(!IsClientInGame(i))
 			continue;
 		QueryClientConVar(i, "cl_hud_minmode", ConVarQuery_MinMode);
 	}*/
-	
+
 	gOnRegOpen = CreateGlobalForward("RRM_OnRegOpen", ET_Ignore);
 	gArray = CreateArray();
-	
+
 	//Need to check when an active modifier gets unloaded
 	CreateTimer(1.0, Timer_OnModifiersUnloaded, _, TIMER_REPEAT);
-	
+
 	//AutoExecConfig(true, "rrm", "rrm");
 }
 
@@ -100,7 +100,7 @@ public void OnConfigsExecuted()
 
 /*public void OnClientPostAdminCheck(int client)
 {
-	QueryClientConVar(client, "cl_hud_minmode", ConVarQuery_MinMode);	
+	QueryClientConVar(client, "cl_hud_minmode", ConVarQuery_MinMode);
 }*/
 
 /*
@@ -116,7 +116,7 @@ public void OnMapEnd()
 	{
 		gCurrentModifier.Reset();
 		Handle hForward = view_as<Handle>(gCurrentModifier.ReadCell());
-		
+
 		if(GetForwardFunctionCount(hForward) == 0)
 		{
 			delete hForward;
@@ -124,7 +124,7 @@ public void OnMapEnd()
 			delete gCurrentModifier;
 			gArray.Erase(index);
 		}
-		
+
 		Call_StartForward(hForward);
 		Call_PushCell(false);
 		Call_PushFloat(0.0);
@@ -139,16 +139,16 @@ public Action Timer_OnModifiersUnloaded(Handle timer)
 	{
 		gCurrentModifier.Reset();
 		Handle hForward = view_as<Handle>(gCurrentModifier.ReadCell());
-		
+
 		if(!GetForwardFunctionCount(hForward))
 		{
 			delete hForward;
 			int index = gArray.FindValue(gCurrentModifier);
 			delete gCurrentModifier;
 			gArray.Erase(index);
-			
+
 			CPrintToChatAll("{cyan}[RRM] {orange}An active modifier was unloaded, picking a new modifier.");
-			
+
 			do {
 				if(!gArray.Length)
 				{
@@ -218,12 +218,12 @@ int RollModifiers()
 		{
 			return 0;
 		}
-		
+
 		if(gCurrentModifier != null)
 		{
 			gCurrentModifier.Reset();
 			Handle hForward = view_as<Handle>(gCurrentModifier.ReadCell());
-			
+
 			//Check if active sub-plugin was unloaded
 			if(!GetForwardFunctionCount(hForward))
 			{
@@ -233,7 +233,7 @@ int RollModifiers()
 				gArray.Erase(index);
 				continue;
 			}
-			
+
 			Call_StartForward(hForward);
 			Call_PushCell(false);
 			Call_PushFloat(0.0);
@@ -248,20 +248,20 @@ int GetRandomModifier()
 	int randmod = GetRandomInt(0, gArray.Length - 1);
 	DataPack hPack = gArray.Get(randmod);
 	hPack.Reset();
-	
+
 	Handle hForward = view_as<Handle>(hPack.ReadCell());
-	
+
 	float min = hPack.ReadFloat();
 	float max = hPack.ReadFloat();
-	
+
 	bool negate = view_as<bool>(hPack.ReadCell());
-	
+
 	char sPluginName[MAX_PLUGIN_LENGTH];
 	hPack.ReadString(sPluginName, sizeof(sPluginName));
-	
+
 	char sModifierName[MAX_PLUGIN_LENGTH];
-	hPack.ReadString(sModifierName, sizeof(sModifierName));	
-	
+	hPack.ReadString(sModifierName, sizeof(sModifierName));
+
 	//Checks whether the sub-plugin selected was unloaded and removes it from array
 	//timer does this already but this is a backup just incase this is executed first before the timer
 	if(!GetForwardFunctionCount(hForward))
@@ -271,9 +271,9 @@ int GetRandomModifier()
 		gArray.Erase(randmod);
 		return 1;
 	}
-	
+
 	gCurrentModifier = hPack;
-	
+
 	float rand;
 	if(!min && max)
 		rand = max;
@@ -283,27 +283,27 @@ int GetRandomModifier()
 		rand = 0.0;
 	else
 		rand = GetRandomFloat(min, max);
-	
+
 	if(negate)
 	{
 		if(GetRandomInt(0,1) == 1)
 			rand = -(rand);
 	}
-		
+
 	/*char message[MAX_STRING_LENGTH]; NO LONGER USING
 	if(rand == 0.0)
 		Format(message, sizeof(message), "%s[RRM] %s%s modifier is now set to active.", GREEN, DEFAULT, sModifierName);
 	else
 		Format(message, sizeof(message), "%s[RRM] %s%s modifier is now set to %.0f%%%%.", GREEN, DEFAULT, sModifierName, rand*100);
-		
+
 	RRM_PrintMsg(message, "leaderboard_streak", 0, 3);
 	*/
-	
+
 	if(rand == 0.0)
 		CPrintToChatAll("{cyan}[RRM] {orange}%s modifier is now set to active", sModifierName);
 	else
 		CPrintToChatAll("{cyan}[RRM] {orange}%s modifier is now set to %.0f%%", sModifierName, rand*100);
-	
+
 	Call_StartForward(hForward);
 	Call_PushCell(true);
 	Call_PushFloat(rand);
@@ -316,7 +316,7 @@ public int Native_RRM_Register(Handle plugin, int numParams)
 {
 	char sPluginName[MAX_PLUGIN_LENGTH];
 	GetPluginFilename(plugin, sPluginName, sizeof(sPluginName));
-	
+
 	if(!gIsRegOpen)
 	{
 		ThrowNativeError(SP_ERROR_NATIVE, "%s is trying to register plugin late-loaded, plugin must use native RRM_IsRegOpen and forward RRM_OnRegOpen. Read example plugin.", sPluginName);
@@ -326,18 +326,18 @@ public int Native_RRM_Register(Handle plugin, int numParams)
 	GetNativeString(1, sModifierName, sizeof(sModifierName));
 	float min = GetNativeCell(2);
 	float max = GetNativeCell(3);
-	
+
 	if(min < 0 || max < 0)
 	{
 		ThrowNativeError(SP_ERROR_NATIVE, "%s is trying to set the min/max value as a negative. This can not happen!", sPluginName);
 		return 0;
 	}
-	
+
 	bool negate = view_as<bool>(GetNativeCell(4));
-	
+
 	Handle hForward = CreateForward(ET_Ignore, Param_Cell, Param_Float);
 	AddToForward(hForward, plugin, GetNativeFunction(5));
-	
+
 	DataPack hPack = new DataPack();
 	hPack.WriteCell(hForward);
 	hPack.WriteFloat(min);
@@ -346,7 +346,7 @@ public int Native_RRM_Register(Handle plugin, int numParams)
 	hPack.WriteString(sPluginName);
 	hPack.WriteString(sModifierName);
 	gArray.Push(hPack);
-	
+
 	return 1;
 }
 
@@ -360,7 +360,7 @@ void Forward_OnRegOpen()
 {
 	if(GetForwardFunctionCount(gOnRegOpen) < 1)
 		return;
-		
+
 	Call_StartForward(gOnRegOpen);
 	Call_Finish();
 }
@@ -380,10 +380,10 @@ void RRM_PrintMsg(char[] message, char[] icon, int color, int repeat)
 	{
 		if(!IsClientInGame(i))
 			continue;
-			
+
 		targets[count] = i;
 		count++;
-		
+
 		char tmessage[MAX_STRING_LENGTH];
 		strcopy(tmessage, sizeof(tmessage), message);
 		ReplaceString(tmessage, sizeof(tmessage), "%%", "%", false);
@@ -401,7 +401,7 @@ void RRM_PrintMsg(char[] message, char[] icon, int color, int repeat)
 		BfWriteString(bf, icon);
 		BfWriteByte(bf, color);
 		EndMessage();
-		
+
 		if(repeat > 0)
 		{
 			DataPack hPack;
