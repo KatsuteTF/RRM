@@ -20,7 +20,7 @@ jobs:
 
       - name: Compile Plugin
         run: |
-          spcomp addons/sourcemod/scripting/rrm.sp
+          spcomp -i addons/sourcemod/include addons/sourcemod/scripting/rrm.sp
           spcomp -i addons/sourcemod/include addons/sourcemod/scripting/rrm_backstabdamage.sp
           spcomp -i addons/sourcemod/include addons/sourcemod/scripting/rrm_crits.sp
           spcomp -i addons/sourcemod/include addons/sourcemod/scripting/rrm_damage.sp
