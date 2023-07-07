@@ -426,7 +426,7 @@ public Action Timer_RepeatHUD(Handle timer, DataPack hPack)
 	RRM_PrintMsg(message, icon, color, repeat);
 }*/
 
-public int RandomInt(const int min = 0.0, const int max = 1.0){
+public int RandomInt(const int min = 0, const int max = 1){
     return RoundToFloor((max + 1 - min) * GetURandomFloat()) + min;
 }
 

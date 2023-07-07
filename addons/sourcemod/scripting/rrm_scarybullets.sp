@@ -128,7 +128,7 @@ public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &dam
 	return Plugin_Continue;
 }
 
-public int RandomInt(const int min = 0.0, const int max = 1.0){
+public int RandomInt(const int min = 0, const int max = 1){
     return RoundToFloor((max + 1 - min) * GetURandomFloat()) + min;
 }
 

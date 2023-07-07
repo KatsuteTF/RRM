@@ -99,7 +99,7 @@ public Action TF2_CalcIsAttackCritical(int client, int weapon, char[] weaponname
 	return Plugin_Changed;
 }
 
-public int RandomInt(const int min = 0.0, const int max = 1.0){
+public int RandomInt(const int min = 0, const int max = 1){
     return RoundToFloor((max + 1 - min) * GetURandomFloat()) + min;
 }
 
