@@ -124,9 +124,17 @@ public Action TF2_CalcIsAttackCritical(int client, int weapon, char[] weaponname
 	if(!gEnabled)
 		return Plugin_Continue;
 	//Here we use the stored variable and do some calculations to get crit chance
-	if(gChance > GetRandomFloat(GetRandomFloat(0.0, 1.0)))
+	if(gChance > RandomFloat(RandomFloat(0.0, 1.0)))
 		result = true;
 	else
 		result = false;
 	return Plugin_Changed;
+}
+
+public int RandomInt(const int min = 0.0, const int max = 1.0){
+    return RoundToFloor((max + 1 - min) * GetURandomFloat()) + min;
+}
+
+public float RandomFloat(const float min = 0.0, const float max = 1.0){
+    return min + GetURandomFloat() * (max - min);
 }

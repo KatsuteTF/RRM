@@ -245,7 +245,7 @@ int RollModifiers()
 
 int GetRandomModifier()
 {
-	int randmod = GetRandomInt(0, gArray.Length - 1);
+	int randmod = RandomInt(0, gArray.Length - 1);
 	DataPack hPack = gArray.Get(randmod);
 	hPack.Reset();
 
@@ -282,11 +282,11 @@ int GetRandomModifier()
 	else if(!min && !max)
 		rand = 0.0;
 	else
-		rand = GetRandomFloat(min, max);
+		rand = RandomFloat(min, max);
 
 	if(negate)
 	{
-		if(GetRandomInt(0,1) == 1)
+		if(RandomInt(0,1) == 1)
 			rand = -(rand);
 	}
 
@@ -425,3 +425,11 @@ public Action Timer_RepeatHUD(Handle timer, DataPack hPack)
 	int repeat = hPack.ReadCell() - 1;
 	RRM_PrintMsg(message, icon, color, repeat);
 }*/
+
+public int RandomInt(const int min = 0.0, const int max = 1.0){
+    return RoundToFloor((max + 1 - min) * GetURandomFloat()) + min;
+}
+
+public float RandomFloat(const float min = 0.0, const float max = 1.0){
+    return min + GetURandomFloat() * (max - min);
+}

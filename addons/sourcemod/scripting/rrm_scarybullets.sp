@@ -111,7 +111,7 @@ public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &dam
 	if(!gEnabled)
 		return Plugin_Continue;
 
-	if(gChance > GetRandomFloat(GetRandomFloat(0.0, 1.0)))
+	if(gChance > RandomFloat(RandomFloat(0.0, 1.0)))
 	{
 		if(!(1 <= victim <= MaxClients))
 			return Plugin_Continue;
@@ -126,4 +126,12 @@ public Action OnTakeDamage(int victim, int &attacker, int &inflictor, float &dam
 		TF2_StunPlayer(victim, gDuration, _, TF_STUNFLAGS_GHOSTSCARE, attacker);
 	}
 	return Plugin_Continue;
+}
+
+public int RandomInt(const int min = 0.0, const int max = 1.0){
+    return RoundToFloor((max + 1 - min) * GetURandomFloat()) + min;
+}
+
+public float RandomFloat(const float min = 0.0, const float max = 1.0){
+    return min + GetURandomFloat() * (max - min);
 }
