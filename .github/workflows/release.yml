@@ -20,7 +20,7 @@ jobs:
           url: https://raw.githubusercontent.com/FlaminSarge/tf2attributes/master/scripting/include/tf2attributes.inc
           file: addons/sourcemod/include/tf2attributes.inc
 
-      - name: Install TF2Attributes
+      - name: Install More Colors
         uses: KatsuteTF/Workflows/actions/curl@main
         with:
           url: https://raw.githubusercontent.com/DoctorMcKay/sourcemod-plugins/master/scripting/include/morecolors.inc
