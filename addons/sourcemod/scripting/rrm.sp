@@ -148,12 +148,14 @@ public Action Timer_OnModifiersUnloaded(Handle timer)
 			gArray.Erase(index);
 
 			CPrintToChatAll("{cyan}[RRM] {orange}An active modifier was unloaded, picking a new modifier.");
+			PrintToServer("[RRM] An active modifier was unloaded, picking a new modifier.");
 
 			do {
 				if(!gArray.Length)
 				{
 					LogError("[RRM] Error: No active modifiers have been loaded to core.");
 					CPrintToChatAll("{cyan}[RRM] {red}Error: {orange}No active modifiers have been loaded to core.");
+					PrintToServer("[RRM] Error: No active modifiers have been loaded to core.");
 					return Plugin_Continue;
 				}
 			} while (GetRandomModifier());
@@ -194,6 +196,7 @@ public Action OnRoundStart(Handle event, const char[] name, bool dontBroadcast)
 	{
 		LogError("[RRM] Error: No active modifiers have been loaded to core.");
 		CPrintToChatAll("{cyan}[RRM] {red}Error: {orange}No active modifiers have been loaded to core.");
+		PrintToServer("[RRM] Error: No active modifiers have been loaded to core.");
 	}
 	return Plugin_Continue;
 }
@@ -207,6 +210,7 @@ public void ExecuteLateLoadModifier(any val)
 		{
 			LogError("[RRM] Error: No active modifiers have been loaded to core.");
 			CPrintToChatAll("{cyan}[RRM] {red}Error: {orange}No active modifiers have been loaded to core.");
+			PrintToServer("[RRM] Error: No active modifiers have been loaded to core.");
 		}
 	}
 }
@@ -299,10 +303,13 @@ int GetRandomModifier()
 	RRM_PrintMsg(message, "leaderboard_streak", 0, 3);
 	*/
 
-	if(rand == 0.0)
+	if(rand == 0.0){
 		CPrintToChatAll("{cyan}[RRM] {orange}%s modifier is now set to active", sModifierName);
-	else
+		PrintToServer("[RRM] %s modifier is now set to active", sModifierName);
+    }else{
 		CPrintToChatAll("{cyan}[RRM] {orange}%s modifier is now set to %.0f%%", sModifierName, rand*100);
+		PrintToServer("[RRM] %s modifier is now set to %.0f%%", sModifierName, rand*100);
+    }
 
 	Call_StartForward(hForward);
 	Call_PushCell(true);
