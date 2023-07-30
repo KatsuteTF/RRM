@@ -124,7 +124,6 @@ public void OnCaptureEvent(const Event event, const char[] name, const bool dont
             CPrintToChatAll("{cyan}[RRM] {red}Error: {orange}No active modifiers have been loaded to core.");
             PrintToServer("[RRM] Error: No active modifiers have been loaded to core.");
         }
-    return Plugin_Continue;
 }
 
 public void OnMapEnd()
