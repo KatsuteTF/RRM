@@ -46,6 +46,8 @@ DataPack gCurrentModifier = null;
 int gIsRegOpen = 0;
 //bool gIsMinHUDEnabled[MAXPLAYERS + 1] =  { false, ... };
 
+ConVar capCV = null;
+
 public Plugin myinfo =
 {
 	name = "[TF2] Random Round Modifier",
@@ -58,6 +60,8 @@ public Plugin myinfo =
 public void OnPluginStart()
 {
 	CreateConVar("sm_rrm_version", RRM_VERSION, "Random Round Modifier Version", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_DONTRECORD|FCVAR_NOTIFY);
+
+    capCV = CreateConVar("sm_rrm_cap", "0", "Enable/disable rerolling on point or flag captures");
 
 	RegAdminCmd("sm_rrmroll", Function_RollModifier, ADMFLAG_GENERIC, "Rerolls a different modifier.");
 
@@ -77,6 +81,9 @@ public void OnPluginStart()
 	CreateTimer(1.0, Timer_OnModifiersUnloaded, _, TIMER_REPEAT);
 
 	//AutoExecConfig(true, "rrm", "rrm");
+
+    HookEvent("ctf_flag_captured", OnCaptureEvent);
+    HookEvent("teamplay_point_captured", OnCaptureEvent);
 }
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
@@ -109,6 +116,16 @@ public void ConVarQuery_MinMode(QueryCookie cookie, int client, ConVarQueryResul
 	if (strlen(cvarValue) > 0)
 		gIsMinHUDEnabled[client] = view_as<bool>(StringToInt(cvarValue));
 }*/
+
+public void OnCaptureEvent(const Event event, const char[] name, const bool dontBroadcast){
+    if(GetConVarBool(capCV))
+        if(!RollModifiers()){
+            LogError("[RRM] Error: No active modifiers have been loaded to core.");
+            CPrintToChatAll("{cyan}[RRM] {red}Error: {orange}No active modifiers have been loaded to core.");
+            PrintToServer("[RRM] Error: No active modifiers have been loaded to core.");
+        }
+    return Plugin_Continue;
+}
 
 public void OnMapEnd()
 {
