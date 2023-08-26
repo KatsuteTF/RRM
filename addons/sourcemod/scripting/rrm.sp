@@ -120,7 +120,7 @@ public void ConVarQuery_MinMode(QueryCookie cookie, int client, ConVarQueryResul
 public void OnCaptureEvent(const Event event, const char[] name, const bool dontBroadcast){
     if(GetConVarBool(capCV))
         if(!RollModifiers()){
-            LogError("[RRM] Error: No active modifiers have been loaded to core.");
+            // LogError("[RRM] Error: No active modifiers have been loaded to core.");
             CPrintToChatAll("{cyan}[RRM] {red}Error: {orange}No active modifiers have been loaded to core.");
             PrintToServer("[RRM] Error: No active modifiers have been loaded to core.");
         }
@@ -169,7 +169,7 @@ public Action Timer_OnModifiersUnloaded(Handle timer)
 			do {
 				if(!gArray.Length)
 				{
-					LogError("[RRM] Error: No active modifiers have been loaded to core.");
+					// LogError("[RRM] Error: No active modifiers have been loaded to core.");
 					CPrintToChatAll("{cyan}[RRM] {red}Error: {orange}No active modifiers have been loaded to core.");
 					PrintToServer("[RRM] Error: No active modifiers have been loaded to core.");
 					return Plugin_Continue;
@@ -210,7 +210,7 @@ public Action OnRoundStart(Handle event, const char[] name, bool dontBroadcast)
 {
 	if(!RollModifiers())
 	{
-		LogError("[RRM] Error: No active modifiers have been loaded to core.");
+		// LogError("[RRM] Error: No active modifiers have been loaded to core.");
 		CPrintToChatAll("{cyan}[RRM] {red}Error: {orange}No active modifiers have been loaded to core.");
 		PrintToServer("[RRM] Error: No active modifiers have been loaded to core.");
 	}
@@ -224,7 +224,7 @@ public void ExecuteLateLoadModifier(any val)
 	{
 		if(!RollModifiers())
 		{
-			LogError("[RRM] Error: No active modifiers have been loaded to core.");
+			// LogError("[RRM] Error: No active modifiers have been loaded to core.");
 			CPrintToChatAll("{cyan}[RRM] {red}Error: {orange}No active modifiers have been loaded to core.");
 			PrintToServer("[RRM] Error: No active modifiers have been loaded to core.");
 		}
