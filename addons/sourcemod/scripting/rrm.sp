@@ -67,7 +67,7 @@ public void OnPluginStart()
 
 	HookEvent("teamplay_round_start", OnRoundStart, EventHookMode_Post);
 
-	/*for (int i = 1; i < MaxClients; i++)
+	/*for (int i = 1; i <= MaxClients; i++)
 	{
 		if(!IsClientInGame(i))
 			continue;

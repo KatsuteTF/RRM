@@ -50,7 +50,7 @@ public void OnPluginStart()
 	gDamage = cDamage.IntValue;
 	gRadius = cRadius.IntValue;
 
-	for (int i = 1; i < MaxClients; i++)
+	for (int i = 1; i <= MaxClients; i++)
 	{
 		if(!IsClientInGame(i))
 			continue;
