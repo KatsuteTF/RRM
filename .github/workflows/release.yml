@@ -13,6 +13,8 @@ jobs:
 
       - name: Install SourceMod
         uses: KatsuteTF/Workflows/actions/setup-sourcepawn@main
+        with:
+          sourcemod-version: "1.12"
 
       - name: Install TF2Attributes
         uses: KatsuteTF/Workflows/actions/curl@main
@@ -27,7 +29,7 @@ jobs:
           file: addons/sourcemod/include/morecolors.inc
 
       - name: Compile Plugin
-        run: |
+        run: |-
           spcomp -i addons/sourcemod/include addons/sourcemod/scripting/rrm.sp
           spcomp -i addons/sourcemod/include addons/sourcemod/scripting/rrm_backstabdamage.sp
           spcomp -i addons/sourcemod/include addons/sourcemod/scripting/rrm_crits.sp
@@ -47,7 +49,7 @@ jobs:
           spcomp -i addons/sourcemod/include addons/sourcemod/scripting/rrm_speed.sp
 
       - name: Deploy to GitHub Releases
-        uses: AButler/upload-release-assets@v2.0.2
+        uses: AButler/upload-release-assets@v3.0
         with:
           files: "*.smx"
           repo-token: ${{ secrets.GITHUB_TOKEN }}
