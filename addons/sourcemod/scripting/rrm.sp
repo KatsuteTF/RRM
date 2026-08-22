@@ -249,7 +249,7 @@ void StartModifierVote()
 		voteTime = 1;
 
 	gVoteMenu.DisplayVoteToAll(voteTime);
-	CPrintToChatAll("{cyan}[RRM] {orange}Vote for the next round's modifier has started!");
+	CPrintToChatAll("{cyan}[RRM] {orange}Vote for the next round's modifier has started");
 }
 
 public int Handler_ModifierVote(Menu menu, MenuAction action, int param1, int param2)
@@ -266,7 +266,7 @@ public int Handler_ModifierVote(Menu menu, MenuAction action, int param1, int pa
 			if(gArray.FindValue(hPack) != -1)
 			{
 				gVoteWinner = hPack;
-				CPrintToChatAll("{cyan}[RRM] {orange}%s{default} has won the vote and will be active next round!", sModifierName);
+				CPrintToChatAll("{cyan}[RRM] {orange}%s{default} has won the vote", sModifierName);
 			}
 		}
 		case MenuAction_End:
