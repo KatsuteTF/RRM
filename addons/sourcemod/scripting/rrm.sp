@@ -47,6 +47,12 @@ int gIsRegOpen = 0;
 //bool gIsMinHUDEnabled[MAXPLAYERS + 1] =  { false, ... };
 
 ConVar capCV = null;
+ConVar voteChoicesCV = null;
+
+//Next-round modifier vote state
+Menu gVoteMenu = null;
+DataPack gVoteWinner = null;
+Handle gApplyModifierTimer = null;
 
 public Plugin myinfo =
 {
@@ -63,9 +69,12 @@ public void OnPluginStart()
 
     capCV = CreateConVar("sm_rrm_cap", "0", "Enable/disable rerolling on point or flag captures");
 
+	voteChoicesCV = CreateConVar("sm_rrm_vote_choices", "4", "Maximum number of modifiers offered in the next-round vote (minimum 2).");
+
 	RegAdminCmd("sm_rrmroll", Function_RollModifier, ADMFLAG_GENERIC, "Rerolls a different modifier.");
 
 	HookEvent("teamplay_round_start", OnRoundStart, EventHookMode_Post);
+	HookEvent("teamplay_win_panel", OnWinPanelEvent, EventHookMode_Post);
 
 	/*for (int i = 1; i <= MaxClients; i++)
 	{
@@ -128,6 +137,10 @@ public void OnCaptureEvent(const Event event, const char[] name, const bool dont
 
 public void OnMapEnd()
 {
+	delete gApplyModifierTimer;
+	delete gVoteMenu;
+	gVoteWinner = null;
+
 	if(gCurrentModifier != null)
 	{
 		gCurrentModifier.Reset();
@@ -147,6 +160,126 @@ public void OnMapEnd()
 		Call_Finish();
 	}
 	gCurrentModifier = null;
+}
+
+public void OnWinPanelEvent(Event event, const char[] name, bool dontBroadcast)
+{
+
+	delete gApplyModifierTimer;
+	gVoteWinner = null;
+
+	StartModifierVote();
+
+	float bonusTime = GetConVarFloat(FindConVar("mp_bonusroundtime"));
+	float delay = bonusTime - 1.0;
+	if(delay < 0.0)
+		delay = 0.0;
+
+	gApplyModifierTimer = CreateTimer(delay, Timer_ApplyModifierVote, _, TIMER_FLAG_NO_MAPCHANGE);
+}
+
+void StartModifierVote()
+{
+	if(gArray.Length < 2 || IsVoteInProgress())
+		return;
+
+	ArrayList candidates = new ArrayList();
+	for(int i = 0; i < gArray.Length; i++)
+	{
+		DataPack hPack = gArray.Get(i);
+		hPack.Reset();
+		Handle hForward = view_as<Handle>(hPack.ReadCell());
+
+		if(GetForwardFunctionCount(hForward))
+			candidates.Push(hPack);
+	}
+
+	if(candidates.Length < 2)
+	{
+		delete candidates;
+		return;
+	}
+
+	int maxOptions = voteChoicesCV.IntValue;
+	if(maxOptions < 2)
+		maxOptions = 2;
+
+	while(candidates.Length > maxOptions)
+		candidates.Erase(RandomInt(0, candidates.Length - 1));
+
+	gVoteMenu = new Menu(Handler_ModifierVote, MenuAction_VoteEnd|MenuAction_VoteCancel|MenuAction_End);
+	gVoteMenu.SetTitle("Vote for the next round's modifier!");
+	gVoteMenu.ExitButton = false;
+
+	char sInfo[16];
+	char sPluginName[MAX_PLUGIN_LENGTH];
+	char sModifierName[MAX_PLUGIN_LENGTH];
+
+	for(int i = 0; i < candidates.Length; i++)
+	{
+		DataPack hPack = candidates.Get(i);
+		hPack.Reset();
+		hPack.ReadCell();
+		hPack.ReadFloat();
+		hPack.ReadFloat();
+		hPack.ReadCell();
+		hPack.ReadString(sPluginName, sizeof(sPluginName));
+		hPack.ReadString(sModifierName, sizeof(sModifierName));
+
+		IntToString(view_as<int>(hPack), sInfo, sizeof(sInfo));
+		gVoteMenu.AddItem(sInfo, sModifierName);
+	}
+
+	delete candidates;
+
+	if(gVoteMenu.ItemCount < 2)
+	{
+		delete gVoteMenu;
+		gVoteMenu = null;
+		return;
+	}
+
+	float bonusTime = GetConVarFloat(FindConVar("mp_bonusroundtime"));
+	int voteTime = RoundToFloor(bonusTime) - 1;
+	if(voteTime < 1)
+		voteTime = 1;
+
+	gVoteMenu.DisplayVoteToAll(voteTime);
+	CPrintToChatAll("{cyan}[RRM] {orange}Vote for the next round's modifier has started!");
+}
+
+public int Handler_ModifierVote(Menu menu, MenuAction action, int param1, int param2)
+{
+	switch(action)
+	{
+		case MenuAction_VoteEnd:
+		{
+			char sInfo[16];
+			char sModifierName[MAX_PLUGIN_LENGTH];
+			menu.GetItem(param1, sInfo, sizeof(sInfo), _, sModifierName, sizeof(sModifierName));
+
+			DataPack hPack = view_as<DataPack>(StringToInt(sInfo));
+			if(gArray.FindValue(hPack) != -1)
+			{
+				gVoteWinner = hPack;
+				CPrintToChatAll("{cyan}[RRM] {orange}%s{default} has won the vote and will be active next round!", sModifierName);
+			}
+		}
+		case MenuAction_End:
+		{
+			delete menu;
+			gVoteMenu = null;
+		}
+	}
+	return 0;
+}
+
+public Action Timer_ApplyModifierVote(Handle timer)
+{
+	gApplyModifierTimer = null;
+	RollModifiers(gVoteWinner);
+	gVoteWinner = null;
+	return Plugin_Stop;
 }
 
 public Action Timer_OnModifiersUnloaded(Handle timer)
@@ -208,11 +341,14 @@ public Action Function_RollModifier(int client, int args)
 
 public Action OnRoundStart(Handle event, const char[] name, bool dontBroadcast)
 {
-	if(!RollModifiers())
+	if(gCurrentModifier == null)
 	{
-		// LogError("[RRM] Error: No active modifiers have been loaded to core.");
-		CPrintToChatAll("{cyan}[RRM] {red}Error: {orange}No active modifiers have been loaded to core.");
-		PrintToServer("[RRM] Error: No active modifiers have been loaded to core.");
+		if(!RollModifiers())
+		{
+			// LogError("[RRM] Error: No active modifiers have been loaded to core.");
+			CPrintToChatAll("{cyan}[RRM] {red}Error: {orange}No active modifiers have been loaded to core.");
+			PrintToServer("[RRM] Error: No active modifiers have been loaded to core.");
+		}
 	}
 	return Plugin_Continue;
 }
@@ -231,35 +367,42 @@ public void ExecuteLateLoadModifier(any val)
 	}
 }
 
-int RollModifiers()
+int RollModifiers(DataPack forcedPack = null)
 {
-	do {
-		if(!gArray.Length)
-		{
-			return 0;
-		}
+	if(gCurrentModifier != null)
+	{
+		gCurrentModifier.Reset();
+		Handle hForward = view_as<Handle>(gCurrentModifier.ReadCell());
 
-		if(gCurrentModifier != null)
+		//Check if active sub-plugin was unloaded
+		if(!GetForwardFunctionCount(hForward))
 		{
-			gCurrentModifier.Reset();
-			Handle hForward = view_as<Handle>(gCurrentModifier.ReadCell());
-
-			//Check if active sub-plugin was unloaded
-			if(!GetForwardFunctionCount(hForward))
-			{
-				delete hForward;
-				int index = gArray.FindValue(gCurrentModifier);
-				delete gCurrentModifier;
+			delete hForward;
+			int index = gArray.FindValue(gCurrentModifier);
+			if(index != -1)
 				gArray.Erase(index);
-				continue;
-			}
-
+			delete gCurrentModifier;
+		}
+		else
+		{
 			Call_StartForward(hForward);
 			Call_PushCell(false);
 			Call_PushFloat(0.0);
 			Call_Finish();
 		}
-	} while (GetRandomModifier());
+		gCurrentModifier = null;
+	}
+
+	if(!gArray.Length)
+		return 0;
+
+	if(forcedPack != null && gArray.FindValue(forcedPack) != -1)
+	{
+		ActivateModifier(forcedPack);
+		return 1;
+	}
+
+	while (GetRandomModifier()) {}
 	return 1;
 }
 
@@ -267,6 +410,24 @@ int GetRandomModifier()
 {
 	int randmod = RandomInt(0, gArray.Length - 1);
 	DataPack hPack = gArray.Get(randmod);
+	hPack.Reset();
+
+	Handle hForward = view_as<Handle>(hPack.ReadCell());
+
+	if(!GetForwardFunctionCount(hForward))
+	{
+		delete hForward;
+		delete hPack;
+		gArray.Erase(randmod);
+		return 1;
+	}
+
+	ActivateModifier(hPack);
+	return 0;
+}
+
+void ActivateModifier(DataPack hPack)
+{
 	hPack.Reset();
 
 	Handle hForward = view_as<Handle>(hPack.ReadCell());
@@ -281,16 +442,6 @@ int GetRandomModifier()
 
 	char sModifierName[MAX_PLUGIN_LENGTH];
 	hPack.ReadString(sModifierName, sizeof(sModifierName));
-
-	//Checks whether the sub-plugin selected was unloaded and removes it from array
-	//timer does this already but this is a backup just incase this is executed first before the timer
-	if(!GetForwardFunctionCount(hForward))
-	{
-		delete hForward;
-		delete hPack;
-		gArray.Erase(randmod);
-		return 1;
-	}
 
 	gCurrentModifier = hPack;
 
