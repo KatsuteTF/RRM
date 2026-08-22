@@ -23,7 +23,7 @@
  //Added 5 new modifiers (jump/secondarydmg/primarydmg/meleedmg/gravity)
 #pragma semicolon 1
 
-#define RRM_VERSION "1.0"
+#define RRM_VERSION "2.0"
 #define MAX_STRING_LENGTH 256
 #define MAX_PLUGIN_LENGTH 128
 //#define GREEN 	"{green}"
@@ -47,6 +47,7 @@ int gIsRegOpen = 0;
 //bool gIsMinHUDEnabled[MAXPLAYERS + 1] =  { false, ... };
 
 ConVar capCV = null;
+ConVar voteEnabledCV = null;
 ConVar voteChoicesCV = null;
 
 //Next-round modifier vote state
@@ -69,7 +70,9 @@ public void OnPluginStart()
 
     capCV = CreateConVar("sm_rrm_cap", "0", "Enable/disable rerolling on point or flag captures");
 
-	voteChoicesCV = CreateConVar("sm_rrm_vote_choices", "4", "Maximum number of modifiers offered in the next-round vote (minimum 2).");
+	voteEnabledCV = CreateConVar("sm_rrm_vote_enabled", "0", "Enable/disable voting for the next round's modifier. When disabled the modifier is always chosen at random.");
+
+	voteChoicesCV = CreateConVar("sm_rrm_vote_choices", "3", "Maximum number of modifiers offered in the next-round vote (minimum 2).");
 
 	RegAdminCmd("sm_rrmroll", Function_RollModifier, ADMFLAG_GENERIC, "Rerolls a different modifier.");
 
@@ -168,7 +171,8 @@ public void OnWinPanelEvent(Event event, const char[] name, bool dontBroadcast)
 	delete gApplyModifierTimer;
 	gVoteWinner = null;
 
-	StartModifierVote();
+	if(GetConVarBool(voteEnabledCV))
+		StartModifierVote();
 
 	float bonusTime = GetConVarFloat(FindConVar("mp_bonusroundtime"));
 	float delay = bonusTime - 1.0;
