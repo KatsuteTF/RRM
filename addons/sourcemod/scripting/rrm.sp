@@ -486,7 +486,6 @@ void ActivateModifier(DataPack hPack)
 	Call_PushCell(true);
 	Call_PushFloat(rand);
 	Call_Finish();
-	return 0;
 }
 
 //Natives
