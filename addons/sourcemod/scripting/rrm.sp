@@ -174,12 +174,7 @@ public void OnWinPanelEvent(Event event, const char[] name, bool dontBroadcast)
 	if(GetConVarBool(voteEnabledCV))
 		StartModifierVote();
 
-	float bonusTime = GetConVarFloat(FindConVar("mp_bonusroundtime"));
-	float delay = bonusTime - 1.0;
-	if(delay < 0.0)
-		delay = 0.0;
-
-	gApplyModifierTimer = CreateTimer(delay, Timer_ApplyModifierVote, _, TIMER_FLAG_NO_MAPCHANGE);
+	gApplyModifierTimer = CreateTimer(GetConVarFloat(FindConVar("mp_bonusroundtime")), Timer_ApplyModifierVote, _, TIMER_FLAG_NO_MAPCHANGE);
 }
 
 void StartModifierVote()
@@ -345,7 +340,7 @@ public Action Function_RollModifier(int client, int args)
 
 public Action OnRoundStart(Handle event, const char[] name, bool dontBroadcast)
 {
-	if(gCurrentModifier == null)
+	if(!GameRules_GetProp("m_bInWaitingForPlayers") && gCurrentModifier == null)
 	{
 		if(!RollModifiers())
 		{
