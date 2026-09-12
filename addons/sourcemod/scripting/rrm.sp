@@ -13,14 +13,6 @@
  *
  *	============================================================================
  */
- //fix timer onmodifierunload when there are 0 modifiers
- //timer now actively removes subplugins that gets unloaded
- //forgot to remove debug messages
- //auto pick modifier if plugin is lateloaded instead of waiting on next round
- //clean/tidy the code from core/sub-plugins
- //added convars to each of the sub-plugins check cfg/rrm folder
- //replaced the modifier notification hud with regular colored chat message
- //Added 5 new modifiers (jump/secondarydmg/primarydmg/meleedmg/gravity)
 #pragma semicolon 1
 
 #define RRM_VERSION "2.0"
@@ -53,7 +45,6 @@ ConVar voteChoicesCV = null;
 //Next-round modifier vote state
 Menu gVoteMenu = null;
 DataPack gVoteWinner = null;
-Handle gApplyModifierTimer = null;
 
 public Plugin myinfo =
 {
@@ -140,7 +131,6 @@ public void OnCaptureEvent(const Event event, const char[] name, const bool dont
 
 public void OnMapEnd()
 {
-	delete gApplyModifierTimer;
 	delete gVoteMenu;
 	gVoteWinner = null;
 
@@ -167,14 +157,10 @@ public void OnMapEnd()
 
 public void OnWinPanelEvent(Event event, const char[] name, bool dontBroadcast)
 {
-
-	delete gApplyModifierTimer;
 	gVoteWinner = null;
 
 	if(GetConVarBool(voteEnabledCV))
 		StartModifierVote();
-
-	gApplyModifierTimer = CreateTimer(GetConVarFloat(FindConVar("mp_bonusroundtime")), Timer_ApplyModifierVote, _, TIMER_FLAG_NO_MAPCHANGE);
 }
 
 void StartModifierVote()
@@ -273,14 +259,6 @@ public int Handler_ModifierVote(Menu menu, MenuAction action, int param1, int pa
 	return 0;
 }
 
-public Action Timer_ApplyModifierVote(Handle timer)
-{
-	gApplyModifierTimer = null;
-	RollModifiers(gVoteWinner);
-	gVoteWinner = null;
-	return Plugin_Stop;
-}
-
 public Action Timer_OnModifiersUnloaded(Handle timer)
 {
 	if(gCurrentModifier != null)
@@ -340,14 +318,14 @@ public Action Function_RollModifier(int client, int args)
 
 public Action OnRoundStart(Handle event, const char[] name, bool dontBroadcast)
 {
-	if(!GameRules_GetProp("m_bInWaitingForPlayers") && gCurrentModifier == null)
+	DataPack winner = gVoteWinner;
+	gVoteWinner = null;
+
+	if(!RollModifiers(winner))
 	{
-		if(!RollModifiers())
-		{
-			// LogError("[RRM] Error: No active modifiers have been loaded to core.");
-			CPrintToChatAll("{cyan}[RRM] {red}Error: {orange}No active modifiers have been loaded to core.");
-			PrintToServer("[RRM] Error: No active modifiers have been loaded to core.");
-		}
+		// LogError("[RRM] Error: No active modifiers have been loaded to core.");
+		CPrintToChatAll("{cyan}[RRM] {red}Error: {orange}No active modifiers have been loaded to core.");
+		PrintToServer("[RRM] Error: No active modifiers have been loaded to core.");
 	}
 	return Plugin_Continue;
 }
@@ -536,67 +514,6 @@ void Forward_OnRegOpen()
 	Call_StartForward(gOnRegOpen);
 	Call_Finish();
 }
-
-//Print function
-/*
-void RRM_PrintMsg(char[] message, char[] icon, int color, int repeat)
-{
-	static UserMsg HudNotifyCustom = INVALID_MESSAGE_ID;
-	if(HudNotifyCustom == INVALID_MESSAGE_ID)
-	{
-		HudNotifyCustom = GetUserMessageId("HudNotifyCustom");
-	}
-	int[] targets = new int[MaxClients];
-	int count;
-	for(int i = 1; i <= MaxClients; i++)
-	{
-		if(!IsClientInGame(i))
-			continue;
-
-		targets[count] = i;
-		count++;
-
-		char tmessage[MAX_STRING_LENGTH];
-		strcopy(tmessage, sizeof(tmessage), message);
-		ReplaceString(tmessage, sizeof(tmessage), "%%", "%", false);
-		if(gIsMinHUDEnabled[i])
-		{
-			CPrintToChat(i, "%s", tmessage);
-		}
-	}
-	if(count)
-	{
-		ReplaceString(message, MAX_STRING_LENGTH, GREEN, "", false);
-		ReplaceString(message, MAX_STRING_LENGTH, DEFAULT, "", false);
-		Handle bf = StartMessageEx(HudNotifyCustom, targets, count);
-		BfWriteString(bf, message);
-		BfWriteString(bf, icon);
-		BfWriteByte(bf, color);
-		EndMessage();
-
-		if(repeat > 0)
-		{
-			DataPack hPack;
-			CreateDataTimer(1.0, Timer_RepeatHUD, hPack);
-			hPack.WriteString(message);
-			hPack.WriteString(icon);
-			hPack.WriteCell(color);
-			hPack.WriteCell(repeat);
-		}
-	}
-}
-
-public Action Timer_RepeatHUD(Handle timer, DataPack hPack)
-{
-	hPack.Reset();
-	char message[MAX_STRING_LENGTH];
-	char icon[MAX_STRING_LENGTH];
-	hPack.ReadString(message, sizeof(message));
-	hPack.ReadString(icon, sizeof(icon));
-	int color = hPack.ReadCell();
-	int repeat = hPack.ReadCell() - 1;
-	RRM_PrintMsg(message, icon, color, repeat);
-}*/
 
 int RandomInt(const int min = 0, const int max = 1){
     return RoundToFloor((max + 1 - min) * GetURandomFloat()) + min;
