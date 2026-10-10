@@ -14,3 +14,11 @@ You can also write your own modifier!
 
 More info and how to set up can be read here:
 https://forums.alliedmods.net/showthread.php?t=282668
+
+## Convars
+
+|cvar|param|description|
+|---|:-:|---|
+|sm_rrm_cap|(**0** \| 1)|Enable/disable rerolling the active modifier when a point or flag is captured|
+|sm_rrm_vote_enabled|(1 \| **0**)|Enable/disable voting for the next round's modifier. When disabled the modifier is always chosen at random|
+|sm_rrm_vote_choices|`3`|Maximum number of modifiers offered in the next round's vote (minimum 2)|
